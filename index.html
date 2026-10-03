@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beställning – Degerfors IF P-18</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#202020}
+.wrap{max-width:760px;margin:0 auto;background:#fff;min-height:100vh}
+header{background:#c8101e;color:#fff;text-align:center;padding:28px 18px}
+header h1{margin:0;font-size:32px} header p{margin:12px 0 0;font-size:21px}
+main{padding:30px}
+label{display:block;font-size:22px;font-weight:700;margin:0 0 10px}
+input[type=text],input[type=tel]{width:100%;height:64px;border:1px solid #bbb;border-radius:12px;padding:0 18px;font-size:20px;margin-bottom:27px}
+h2{font-size:27px;margin:12px 0 20px}
+.product{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 0;border-bottom:1px solid #e5e5e5}
+.name{font-size:21px;font-weight:700;margin-bottom:5px}.price{font-size:18px;color:#666}
+select{width:120px;height:62px;border:1px solid #bbb;border-radius:12px;background:#fff;font-size:20px;padding:0 12px}
+.total{margin-top:28px;background:#fff0a8;border-radius:14px;padding:22px;display:flex;justify-content:space-between;font-size:23px;font-weight:800}
+button{width:100%;margin-top:24px;padding:20px;border:0;border-radius:12px;background:#c8101e;color:#fff;font-size:22px;font-weight:800;cursor:pointer}
+button:disabled{opacity:.6}.status{display:none;margin-top:22px;padding:22px;border-radius:12px;text-align:center;font-size:22px;font-weight:700}
+.success{background:#e7f6e7;color:#176b27}.error{background:#fdeaea;color:#9d1111}.fine{font-size:13px;color:#777;text-align:center;margin-top:16px}
+@media(max-width:600px){main{padding:24px 20px}header h1{font-size:27px}header p{font-size:18px}.name{font-size:19px}select{width:100px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>Beställning – Degerfors IF P-18</h1><p>Bingolotter och julkalendrar</p></header>
+<main>
+<form id="orderForm" action="https://formsubmit.co/lliseen@hotmail.com" method="POST">
+<input type="hidden" name="_subject" value="Ny beställning – Degerfors IF P-18">
+<input type="hidden" name="_captcha" value="false">
+<input type="hidden" name="_template" value="table">
+<input type="hidden" id="emailTotal" name="Totalsumma" value="0 kr">
+
+<label for="name">Namn</label>
+<input id="name" name="Namn" type="text" placeholder="Fyll i ditt namn" required>
+
+<label for="phone">Telefonnummer</label>
+<input id="phone" name="Telefonnummer" type="tel" placeholder="Fyll i telefonnummer" required>
+
+<h2>Välj antal</h2>
+
+<div class="product"><div><div class="name">Bingolottos julkalender</div><div class="price">100 kr/st</div></div><select name="Bingolottos julkalender" class="quantity" data-price="100"></select></div>
+<div class="product"><div><div class="name">Enkellott</div><div class="price">100 kr/st</div></div><select name="Enkellott" class="quantity" data-price="100"></select></div>
+<div class="product"><div><div class="name">Dubbellott</div><div class="price">200 kr/st</div></div><select name="Dubbellott" class="quantity" data-price="200"></select></div>
+<div class="product"><div><div class="name">Trippellott</div><div class="price">300 kr/st</div></div><select name="Trippellott" class="quantity" data-price="300"></select></div>
+<div class="product"><div><div class="name">Nyår enkellott</div><div class="price">100 kr/st</div></div><select name="Nyår enkellott" class="quantity" data-price="100"></select></div>
+<div class="product"><div><div class="name">Nyår dubbellott</div><div class="price">200 kr/st</div></div><select name="Nyår dubbellott" class="quantity" data-price="200"></select></div>
+<div class="product"><div><div class="name">Nyår trippellott</div><div class="price">300 kr/st</div></div><select name="Nyår trippellott" class="quantity" data-price="300"></select></div>
+
+<div class="total"><span>Totalt</span><span id="total">0 kr</span></div>
+<button id="submitButton" type="submit">BESTÄLL</button>
+<div id="success" class="status success">✓ Tack för din beställning!</div>
+<div id="error" class="status error">Beställningen kunde inte skickas. Försök igen.</div>
+<div class="fine">Din beställning skickas till Degerfors IF P-18.</div>
+</form>
+</main>
+</div>
+
+<script>
+const quantities=[...document.querySelectorAll(".quantity")];
+
+// Lägg till 0–20 som val i varje produktrad.
+quantities.forEach(select=>{
+  for(let i=0;i<=20;i++){
+    const option=document.createElement("option");
+    option.value=i;
+    option.textContent=i;
+    select.appendChild(option);
+  }
+});
+
+const totalElement=document.getElementById("total");
+const emailTotal=document.getElementById("emailTotal");
+
+function calculateTotal(){
+  let total=0;
+  quantities.forEach(select=>{
+    total += Number(select.value)*Number(select.dataset.price);
+  });
+  const text=total.toLocaleString("sv-SE")+" kr";
+  totalElement.textContent=text;
+  emailTotal.value=text;
+  return total;
+}
+quantities.forEach(select=>select.addEventListener("change",calculateTotal));
+calculateTotal();
+
+document.getElementById("orderForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+
+  if(!quantities.some(select=>Number(select.value)>0)){
+    alert("Välj minst en lott eller kalender innan du beställer.");
+    return;
+  }
+
+  calculateTotal();
+  const form=event.currentTarget;
+  const button=document.getElementById("submitButton");
+  const success=document.getElementById("success");
+  const error=document.getElementById("error");
+
+  button.disabled=true;
+  button.textContent="SKICKAR...";
+  success.style.display="none";
+  error.style.display="none";
+
+  try{
+    const response=await fetch(form.action,{
+      method:"POST",
+      body:new FormData(form),
+      headers:{"Accept":"application/json"}
+    });
+    if(!response.ok) throw new Error();
+    success.style.display="block";
+    button.style.display="none";
+    success.scrollIntoView({behavior:"smooth",block:"center"});
+  }catch(e){
+    error.style.display="block";
+    button.disabled=false;
+    button.textContent="BESTÄLL";
+  }
+});
+</script>
+</body>
+</html>
